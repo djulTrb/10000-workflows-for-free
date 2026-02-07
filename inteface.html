@@ -1,0 +1,3275 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workflow Library Browser</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary-bg: #1e1e1e;
+        --secondary-bg: #252526;
+        --tertiary-bg: #2d2d30;
+        --text-primary: #cccccc;
+        --text-secondary: #969696;
+        --text-muted: #6a6a6a;
+        --border-color: #3e3e42;
+        --accent: #007acc;
+        --accent-hover: #005a9e;
+        --accent-light: #2d2d30;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
+        --transition: all 0.18s cubic-bezier(0.33, 0.66, 0.66, 1);
+        --complexity-low: #4ec9b0;
+        --complexity-medium: #ce9178;
+        --complexity-high: #f48771;
+        --complexity-complex: #c586c0;
+        --node-trigger: #569cd6;
+        --node-regular: #3e3e42;
+        --node-text: #d4d4d4;
+        --node-type-text: #9cdcfe;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+          Helvetica, Arial, sans-serif;
+        background-color: var(--primary-bg);
+        color: var(--text-primary);
+        line-height: 1.5;
+        overflow-x: hidden;
+      }
+
+      .container {
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 32px 20px;
+      }
+
+      /* Header */
+      .header {
+        margin-bottom: 36px;
+      }
+
+      .header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .header-title {
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        color: var(--text-primary);
+        margin: 0;
+      }
+
+      .header-contact {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .contact-link {
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .contact-email {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        animation: gradientShift 3s ease infinite;
+        background-size: 200% 200%;
+      }
+
+      .contact-tip {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        animation: gradientShift 3s ease infinite;
+        background-size: 200% 200%;
+        animation-delay: 1.5s;
+      }
+
+      @keyframes gradientShift {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .contact-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .contact-link:active {
+        transform: translateY(0);
+      }
+
+      .contact-icon {
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .contact-icon svg {
+        width: 100%;
+        height: 100%;
+        fill: currentColor;
+      }
+
+      .search-bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      .refresh-folder-btn {
+        padding: 11px 14px;
+        background-color: var(--secondary-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .refresh-folder-btn:hover {
+        background-color: var(--tertiary-bg);
+        border-color: var(--accent);
+      }
+
+      .refresh-folder-btn:active {
+        transform: scale(0.95);
+      }
+
+      .refresh-folder-btn svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+
+      .search-input {
+        flex: 1;
+        padding: 11px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        background-color: var(--primary-bg);
+        color: var(--text-primary);
+        transition: var(--transition);
+      }
+
+      .search-input::placeholder {
+        color: var(--text-muted);
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+        background-color: var(--accent-light);
+      }
+
+      .search-btn {
+        padding: 11px 20px;
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .search-btn:hover {
+        background-color: var(--accent-hover);
+        box-shadow: var(--shadow-md);
+      }
+
+      .search-btn:active {
+        transform: scale(0.98);
+      }
+
+      /* Controls */
+      .controls {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 24px;
+      }
+
+      .filter-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .filter-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+      }
+
+      .filter-btn {
+        padding: 7px 11px;
+        background-color: var(--secondary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--text-primary);
+        font-weight: 500;
+      }
+
+      .filter-btn:hover {
+        border-color: var(--accent);
+        background-color: var(--accent-light);
+      }
+
+      .filter-btn.active {
+        background-color: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      .sort-select,
+      .node-type-select,
+      .category-select {
+        padding: 7px 11px;
+        background-color: var(--secondary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--text-primary);
+        font-weight: 500;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230d1117' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 28px;
+        max-width: 200px;
+      }
+
+      .sort-select:hover,
+      .node-type-select:hover,
+      .category-select:hover {
+        border-color: var(--accent);
+      }
+
+      .sort-select:focus,
+      .node-type-select:focus,
+      .category-select:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+      }
+
+      /* Multi-select dropdown styling */
+      .multi-select-container {
+        position: relative;
+        min-width: 180px;
+      }
+
+      .multi-select-trigger {
+        padding: 7px 11px;
+        background-color: var(--secondary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--text-primary);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        user-select: none;
+      }
+
+      .multi-select-trigger:hover {
+        border-color: var(--accent);
+        background-color: var(--accent-light);
+      }
+
+      .multi-select-trigger.has-selection {
+        background-color: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      .multi-select-count {
+        background-color: rgba(255, 255, 255, 0.3);
+        padding: 1px 6px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .multi-select-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 4px;
+        background-color: var(--primary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      }
+
+      .multi-select-dropdown.show {
+        display: block;
+      }
+
+      .multi-select-option {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+      }
+
+      .multi-select-option:hover {
+        background-color: var(--accent-light);
+      }
+
+      .multi-select-option input[type="checkbox"] {
+        cursor: pointer;
+      }
+
+      .multi-select-actions {
+        border-top: 1px solid var(--border-color);
+        padding: 8px;
+        display: flex;
+        gap: 8px;
+        justify-content: space-between;
+      }
+
+      .multi-select-actions button {
+        padding: 4px 8px;
+        background-color: var(--secondary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: var(--transition);
+        font-weight: 500;
+      }
+
+      .multi-select-actions button:hover {
+        background-color: var(--accent-light);
+        border-color: var(--accent);
+      }
+
+      /* Grid Layout */
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+        animation: fadeIn 0.3s ease-out;
+        align-items: start;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 1024px) {
+        .grid-container {
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 14px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .grid-container {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .search-bar {
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .search-input,
+        .search-btn {
+          width: 100%;
+        }
+
+        .controls {
+          gap: 12px;
+        }
+
+        .filter-group {
+          width: 100%;
+        }
+
+        .multi-select-container {
+          width: 100%;
+          min-width: unset;
+        }
+      }
+
+      /* File Card */
+      .file-card {
+        background-color: var(--primary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 7px;
+        padding: 16px;
+        transition: var(--transition);
+        cursor: pointer;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 12px;
+        animation: slideInCard 0.25s ease-out;
+        height: 100%;
+      }
+
+      @keyframes slideInCard {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .file-card:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+
+      .file-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .file-card-title {
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--text-primary);
+        line-height: 1.3;
+        word-break: break-word;
+        flex: 1;
+      }
+
+      .file-card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .file-card-meta-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .meta-label {
+        font-weight: 500;
+        color: var(--text-muted);
+      }
+
+      .complexity-badge {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .complexity-low {
+        background-color: rgba(45, 164, 78, 0.15);
+        color: var(--complexity-low);
+      }
+
+      .complexity-medium {
+        background-color: rgba(251, 133, 0, 0.15);
+        color: var(--complexity-medium);
+      }
+
+      .complexity-high {
+        background-color: rgba(207, 34, 46, 0.15);
+        color: var(--complexity-high);
+      }
+
+      .complexity-complex {
+        background-color: rgba(111, 66, 193, 0.15);
+        color: var(--complexity-complex);
+      }
+
+      .category-badge {
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        background-color: var(--secondary-bg);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
+        white-space: nowrap;
+      }
+
+      .trigger-badge {
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 600;
+        background-color: rgba(9, 105, 218, 0.1);
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .card-btn {
+        flex: 1;
+        padding: 7px 12px;
+        background-color: var(--secondary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        color: var(--text-primary);
+      }
+
+      .card-btn:hover {
+        background-color: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      .card-btn.primary {
+        background-color: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      .card-btn.primary:hover {
+        background-color: var(--accent-hover);
+      }
+
+      /* Services tags section in card */
+      .services-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+      }
+
+      .service-tag {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 500;
+        background-color: rgba(9, 105, 218, 0.08);
+        color: var(--accent);
+        border: 1px solid rgba(9, 105, 218, 0.2);
+      }
+
+      /* Stats Bar */
+      .stats-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        margin-bottom: 16px;
+      }
+
+      .stats {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      .load-more-container {
+        display: flex;
+        justify-content: center;
+        padding: 24px 0;
+      }
+
+      .load-more-btn {
+        padding: 10px 24px;
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .load-more-btn:hover:not(:disabled) {
+        background-color: var(--accent-hover);
+        box-shadow: var(--shadow-md);
+      }
+
+      .load-more-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Modal styles */
+      .modal {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: modalFadeIn 0.2s ease-out;
+      }
+
+      @keyframes modalFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .modal-content {
+        background-color: var(--primary-bg);
+        border-radius: 10px;
+        max-width: 900px;
+        width: 100%;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-lg);
+        animation: modalSlideUp 0.25s ease-out;
+      }
+
+      @keyframes modalSlideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        word-break: break-word;
+        padding-right: 20px;
+      }
+
+      .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 5px;
+        transition: var(--transition);
+        flex-shrink: 0;
+      }
+
+      .modal-close-btn:hover {
+        background-color: var(--secondary-bg);
+        color: var(--text-primary);
+      }
+
+      .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .modal-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .modal-info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .modal-info-label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+      }
+
+      .modal-info-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .modal-tags-section {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .modal-tags-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+      }
+
+      .modal-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .modal-tag {
+        padding: 6px 12px;
+        background-color: var(--secondary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .modal-tag.trigger {
+        background-color: rgba(9, 105, 218, 0.1);
+        border-color: rgba(9, 105, 218, 0.3);
+        color: var(--accent);
+      }
+
+      /* Workflow SVG Visualization */
+      .workflow-canvas-container {
+        background-color: #1a1a1a;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0;
+        margin-bottom: 24px;
+        position: relative;
+        height: 500px;
+        overflow: hidden;
+      }
+
+      .workflow-svg {
+        width: 100%;
+        height: 100%;
+        cursor: grab;
+        background-color: #1a1a1a;
+      }
+
+      .workflow-svg:active {
+        cursor: grabbing;
+      }
+
+      /* SVG Elements */
+      .workflow-node {
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .workflow-node rect {
+        stroke-width: 2;
+        rx: 8;
+      }
+
+      .workflow-node.regular rect {
+        fill: #2d2d30;
+        stroke: #4ec9b0;
+      }
+
+      .workflow-node.trigger rect {
+        fill: #2d2d30;
+        stroke: #569cd6;
+      }
+
+      .workflow-node:hover rect {
+        filter: brightness(1.2);
+        stroke-width: 3;
+      }
+
+      .workflow-node text.node-name {
+        fill: #d4d4d4;
+        font-size: 13px;
+        font-family: "Consolas", "Monaco", "Courier New", monospace;
+        font-weight: 500;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .workflow-node text.node-type {
+        fill: #9cdcfe;
+        font-size: 10px;
+        font-family: "Consolas", "Monaco", "Courier New", monospace;
+        font-weight: 400;
+        pointer-events: none;
+        user-select: none;
+        opacity: 0.8;
+      }
+
+      .workflow-connection {
+        fill: none;
+        stroke: #6a6a6a;
+        stroke-width: 2;
+        pointer-events: none;
+      }
+
+      .workflow-grid {
+        stroke: #3e3e42;
+        stroke-width: 0.5;
+      }
+
+      .canvas-controls {
+        position: absolute;
+        bottom: 24px;
+        right: 24px;
+        display: flex;
+        gap: 8px;
+        background-color: var(--primary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 8px;
+        box-shadow: var(--shadow-md);
+      }
+
+      .canvas-control-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--border-color);
+        background-color: var(--secondary-bg);
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        transition: var(--transition);
+      }
+
+      .canvas-control-btn:hover {
+        background-color: var(--accent-light);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .json-preview-container {
+        background-color: var(--tertiary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 16px;
+        max-height: 400px;
+        overflow: auto;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--text-primary);
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .modal-actions {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+
+      .modal-btn {
+        flex: 1;
+        padding: 10px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        background-color: var(--secondary-bg);
+        color: var(--text-primary);
+      }
+
+      .modal-btn:hover {
+        background-color: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      .modal-btn.primary {
+        background-color: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      .modal-btn.primary:hover {
+        background-color: var(--accent-hover);
+      }
+
+      body.modal-open {
+        overflow: hidden;
+      }
+
+      /* Folder prompt modal */
+      .folder-prompt-modal {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .folder-prompt-content {
+        background-color: var(--primary-bg);
+        border-radius: 10px;
+        max-width: 500px;
+        width: 100%;
+        padding: 32px;
+        box-shadow: var(--shadow-lg);
+        text-align: center;
+      }
+
+      .folder-prompt-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+
+      .folder-prompt-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+      }
+
+      .folder-prompt-text {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+        line-height: 1.6;
+      }
+
+      .folder-prompt-actions {
+        display: flex;
+        gap: 12px;
+      }
+
+      .folder-prompt-btn {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .folder-prompt-btn.primary {
+        background-color: var(--accent);
+        color: white;
+      }
+
+      .folder-prompt-btn.primary:hover {
+        background-color: var(--accent-hover);
+      }
+
+      .folder-prompt-btn.secondary {
+        background-color: var(--secondary-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+      }
+
+      .folder-prompt-btn.secondary:hover {
+        background-color: var(--tertiary-bg);
+      }
+
+      /* Message notifications */
+      .message-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10001;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .message {
+        padding: 12px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: var(--shadow-lg);
+        animation: slideInRight 0.3s ease-out;
+        max-width: 350px;
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .message.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .message.info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="message-container" id="messageContainer"></div>
+
+    <div class="folder-prompt-modal hidden" id="folderModal">
+      <div class="folder-prompt-content">
+        <h2 class="folder-prompt-title">Select Workflow Folder</h2>
+        <p class="folder-prompt-text">
+          This application needs access to a folder containing your n8n workflow
+          JSON files to display and analyze them.
+        </p>
+        <div class="folder-prompt-actions">
+          <button class="folder-prompt-btn secondary" id="cancelAccessBtn">
+            Cancel
+          </button>
+          <button class="folder-prompt-btn primary" id="grantAccessBtn">
+            Select Folder
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="jsonModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="jsonModalTitle">Workflow Preview</h2>
+          <button class="modal-close-btn" id="closeJsonModalBtn">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="jsonModalInfo"></div>
+          <div class="modal-tags-section">
+            <div class="modal-tags-label">Workflow Visualization</div>
+            <div class="workflow-canvas-container">
+              <svg id="workflowSvg" class="workflow-svg">
+                <defs>
+                  <marker
+                    id="arrowhead"
+                    markerWidth="10"
+                    markerHeight="10"
+                    refX="9"
+                    refY="3"
+                    orient="auto"
+                  >
+                    <polygon points="0 0, 10 3, 0 6" fill="#6a6a6a" />
+                  </marker>
+                </defs>
+                <g id="workflowGrid"></g>
+                <g id="workflowConnections"></g>
+                <g id="workflowNodes"></g>
+              </svg>
+              <div class="canvas-controls">
+                <button
+                  class="canvas-control-btn"
+                  id="canvasZoomOut"
+                  title="Zoom Out"
+                >
+                  −
+                </button>
+                <button
+                  class="canvas-control-btn"
+                  id="canvasReset"
+                  title="Reset View"
+                >
+                  ⟲
+                </button>
+                <button
+                  class="canvas-control-btn"
+                  id="canvasZoomIn"
+                  title="Zoom In"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="modal-tags-section">
+            <div class="modal-tags-label">JSON Preview</div>
+            <div class="json-preview-container" id="jsonPreview"></div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn" id="copyJsonBtn">Copy JSON</button>
+          <button class="modal-btn primary" id="downloadJsonBtn">
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="header">
+        <div class="header-top">
+          <h1 class="header-title">N8n Workflow Library Browser</h1>
+          <div class="header-contact">
+            <a
+              href="mailto:thefreeaiautomationhelp@gmail.com"
+              class="contact-link contact-email"
+            >
+              <span class="contact-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"
+                  />
+                </svg>
+              </span>
+              <span>Contact Me</span>
+            </a>
+            <a
+              href="https://ko-fi.com/nodeshare"
+              target="_blank"
+              rel="noopener"
+              class="contact-link contact-tip"
+            >
+              <span class="contact-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                  />
+                </svg>
+              </span>
+              <span>Support & Tips</span>
+            </a>
+          </div>
+        </div>
+        <div class="search-bar">
+          <button
+            class="refresh-folder-btn"
+            id="refreshFolderBtn"
+            title="Reload Folder"
+          >
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
+              />
+            </svg>
+          </button>
+          <input
+            type="text"
+            class="search-input"
+            id="searchInput"
+            placeholder="Search workflows by name, description, or node types..."
+          />
+          <button class="search-btn" id="searchBtn">
+            <span>Search</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="filter-group">
+          <span class="filter-label">Complexity</span>
+          <button class="filter-btn" data-complexity="all">All</button>
+          <button class="filter-btn" data-complexity="low">Low</button>
+          <button class="filter-btn" data-complexity="medium">Medium</button>
+          <button class="filter-btn" data-complexity="high">High</button>
+          <button class="filter-btn" data-complexity="complex">Complex</button>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Category</span>
+          <select class="category-select" id="categorySelect">
+            <option value="all">All Categories</option>
+            <option value="AI">AI & LLM</option>
+            <option value="ANL">Analytics & Reporting</option>
+            <option value="API">API & Integration</option>
+            <option value="COMM">Communication</option>
+            <option value="CONT">Content Creation</option>
+            <option value="CRM">CRM & Sales</option>
+            <option value="DATA">Data Processing</option>
+            <option value="DEV">DevOps & IT</option>
+            <option value="ECOM">E-commerce</option>
+            <option value="EDU">Education & Research</option>
+            <option value="FILE">File Management</option>
+            <option value="FIN">Finance & Payments</option>
+            <option value="MKT">Marketing</option>
+            <option value="PROD">Productivity</option>
+            <option value="SCRAPE">Web Scraping</option>
+            <option value="SEC">Security & Monitoring</option>
+            <option value="SOC">Social Media</option>
+            <option value="TRIG">Scheduling & Triggers</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Subcategory</span>
+          <select class="category-select" id="subcategorySelect">
+            <option value="all">All Subcategories</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Trigger Type</span>
+          <div class="multi-select-container" id="triggerTypeFilter">
+            <div class="multi-select-trigger" id="triggerTypeTrigger">
+              <span id="triggerTypeLabel">Select Triggers</span>
+              <span class="multi-select-count hidden" id="triggerTypeCount"
+                >0</span
+              >
+            </div>
+            <div class="multi-select-dropdown" id="triggerTypeDropdown">
+              <div class="multi-select-option">
+                <input type="checkbox" value="Manual" id="trigger-manual" />
+                <label for="trigger-manual">Manual</label>
+              </div>
+              <div class="multi-select-option">
+                <input type="checkbox" value="Schedule" id="trigger-schedule" />
+                <label for="trigger-schedule">Schedule</label>
+              </div>
+              <div class="multi-select-option">
+                <input type="checkbox" value="Webhook" id="trigger-webhook" />
+                <label for="trigger-webhook">Webhook</label>
+              </div>
+              <div class="multi-select-option">
+                <input type="checkbox" value="Form" id="trigger-form" />
+                <label for="trigger-form">Form</label>
+              </div>
+              <div class="multi-select-option">
+                <input type="checkbox" value="Chat" id="trigger-chat" />
+                <label for="trigger-chat">Chat</label>
+              </div>
+              <div class="multi-select-option">
+                <input type="checkbox" value="n8n Trigger" id="trigger-n8n" />
+                <label for="trigger-n8n">n8n Trigger</label>
+              </div>
+              <div class="multi-select-option">
+                <input type="checkbox" value="Error" id="trigger-error" />
+                <label for="trigger-error">Error</label>
+              </div>
+              <div class="multi-select-option">
+                <input
+                  type="checkbox"
+                  value="Local File"
+                  id="trigger-localfile"
+                />
+                <label for="trigger-localfile">Local File</label>
+              </div>
+              <div class="multi-select-option">
+                <input type="checkbox" value="App Trigger" id="trigger-app" />
+                <label for="trigger-app">App Trigger</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Nodes</span>
+          <div class="multi-select-container" id="servicesFilter">
+            <div class="multi-select-trigger" id="servicesTrigger">
+              <span id="servicesLabel">Select Nodes</span>
+              <span class="multi-select-count hidden" id="servicesCount"
+                >0</span
+              >
+            </div>
+            <div class="multi-select-dropdown" id="servicesDropdown">
+              <!-- Nodes will be populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <span class="filter-label">Sort By</span>
+          <select class="sort-select" id="sortSelect">
+            <option value="name">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="complexity">Complexity (Low to High)</option>
+            <option value="complexity-desc">Complexity (High to Low)</option>
+            <option value="nodes">Nodes Count (Low to High)</option>
+            <option value="nodes-desc">Nodes Count (High to Low)</option>
+            <option value="modified">Recently Modified</option>
+            <option value="modified-asc">Oldest Modified</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <button
+            class="filter-btn"
+            id="resetAllBtn"
+            style="
+              background-color: var(--secondary-bg);
+              color: var(--text-primary);
+              border-color: var(--border-color);
+            "
+          >
+            Reset Filters
+          </button>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stats" id="stats">Loading...</div>
+      </div>
+
+      <div class="grid-container" id="gridContainer"></div>
+
+      <div class="load-more-container">
+        <button class="load-more-btn hidden" id="loadMoreBtn">Load More</button>
+      </div>
+    </div>
+
+    <script>
+      const state = {
+        files: [],
+        displayedFiles: [],
+        currentPage: 1,
+        itemsPerPage: 24,
+        currentSort: "name",
+        searchQuery: "",
+        complexityFilter: "all",
+        categoryFilter: "all",
+        subcategoryFilter: "all",
+        triggerTypeFilters: [],
+        servicesFilters: [],
+        allNodeTypes: new Set(),
+        allServices: new Set(),
+        allSubcategories: new Set(),
+        currentJsonFile: null,
+        dirHandle: null, // Store directory handle for reload
+      };
+
+      const DOM = {};
+
+      async function init() {
+        // Initialize DOM references after page load
+        DOM.gridContainer = document.getElementById("gridContainer");
+        DOM.loadMoreBtn = document.getElementById("loadMoreBtn");
+        DOM.stats = document.getElementById("stats");
+        DOM.searchInput = document.getElementById("searchInput");
+        DOM.searchBtn = document.getElementById("searchBtn");
+        DOM.refreshFolderBtn = document.getElementById("refreshFolderBtn");
+        DOM.sortSelect = document.getElementById("sortSelect");
+        DOM.categorySelect = document.getElementById("categorySelect");
+        DOM.subcategorySelect = document.getElementById("subcategorySelect");
+        DOM.resetAllBtn = document.getElementById("resetAllBtn");
+        DOM.messageContainer = document.getElementById("messageContainer");
+        DOM.folderModal = document.getElementById("folderModal");
+        DOM.grantAccessBtn = document.getElementById("grantAccessBtn");
+        DOM.cancelAccessBtn = document.getElementById("cancelAccessBtn");
+        DOM.jsonModal = document.getElementById("jsonModal");
+        DOM.jsonModalTitle = document.getElementById("jsonModalTitle");
+        DOM.jsonModalInfo = document.getElementById("jsonModalInfo");
+        DOM.jsonPreview = document.getElementById("jsonPreview");
+        DOM.closeJsonModalBtn = document.getElementById("closeJsonModalBtn");
+        DOM.copyJsonBtn = document.getElementById("copyJsonBtn");
+        DOM.downloadJsonBtn = document.getElementById("downloadJsonBtn");
+        DOM.workflowSvg = document.getElementById("workflowSvg");
+        DOM.workflowNodes = document.getElementById("workflowNodes");
+        DOM.workflowConnections = document.getElementById(
+          "workflowConnections"
+        );
+        DOM.workflowGrid = document.getElementById("workflowGrid");
+        DOM.canvasZoomIn = document.getElementById("canvasZoomIn");
+        DOM.canvasZoomOut = document.getElementById("canvasZoomOut");
+        DOM.canvasReset = document.getElementById("canvasReset");
+        DOM.triggerTypeTrigger = document.getElementById("triggerTypeTrigger");
+        DOM.triggerTypeDropdown = document.getElementById(
+          "triggerTypeDropdown"
+        );
+        DOM.triggerTypeLabel = document.getElementById("triggerTypeLabel");
+        DOM.triggerTypeCount = document.getElementById("triggerTypeCount");
+        DOM.servicesTrigger = document.getElementById("servicesTrigger");
+        DOM.servicesDropdown = document.getElementById("servicesDropdown");
+        DOM.servicesLabel = document.getElementById("servicesLabel");
+        DOM.servicesCount = document.getElementById("servicesCount");
+
+        showFolderModal();
+        setupEventListeners();
+        setupMultiSelectListeners();
+      }
+
+      // Hierarchical Category/Subcategory System
+      const CATEGORY_SUBCATEGORY_MAP = {
+        AI: {
+          name: "AI & LLM",
+          subcategories: [
+            "Chatbot",
+            "Classification",
+            "ConversationalAgent",
+            "ImageGeneration",
+            "SentimentAnalysis",
+            "SpeechToText",
+            "Summarization",
+            "TextGeneration",
+            "TextToSpeech",
+            "Translation",
+            "VectorDB",
+          ],
+        },
+        ANL: {
+          name: "Analytics & Reporting",
+          subcategories: [
+            "DashboardUpdate",
+            "Forecasting",
+            "LogAnalysis",
+            "PerformanceAnalysis",
+            "ReportGeneration",
+            "TrendDetection",
+          ],
+        },
+        API: {
+          name: "API & Integration",
+          subcategories: ["APIDataMapping", "APIErrorHandling"],
+        },
+        COMM: {
+          name: "Communication",
+          subcategories: ["EmailSender", "SlackNotifier", "WhatsAppBot"],
+        },
+        CONT: {
+          name: "Content Creation",
+          subcategories: [
+            "BlogGeneration",
+            "ContentPublishing",
+            "ContentScheduling",
+            "ImagePublishing",
+          ],
+        },
+        CRM: {
+          name: "CRM & Sales",
+          subcategories: [
+            "AccountManagement",
+            "ContactSync",
+            "FollowUpAutomation",
+            "LeadProcessing",
+            "LeadScoring",
+          ],
+        },
+        DATA: {
+          name: "Data Processing",
+          subcategories: [
+            "Aggregation",
+            "Backup",
+            "DatabaseSync",
+            "Deduplication",
+            "ETL",
+            "JSONTransform",
+            "Restore",
+          ],
+        },
+        DEV: {
+          name: "DevOps & IT",
+          subcategories: ["GitHubAutomation"],
+        },
+        ECOM: {
+          name: "E-commerce",
+          subcategories: [
+            "CartRecovery",
+            "CustomerNotifications",
+            "InventorySync",
+            "InvoiceGeneration",
+            "OrderSync",
+            "PaymentStatusSync",
+            "PriceMonitoring",
+            "ProductExport",
+            "ProductImport",
+            "RefundHandling",
+          ],
+        },
+        EDU: {
+          name: "Education & Research",
+          subcategories: ["AssignmentGrading", "StudyPlanning"],
+        },
+        FILE: {
+          name: "File Management",
+          subcategories: ["FileDownload", "FileUpload"],
+        },
+        FIN: {
+          name: "Finance & Payments",
+          subcategories: [
+            "AccountingSync",
+            "ExpenseTracking",
+            "FraudDetection",
+            "InvoiceTracking",
+            "PayPalIntegration",
+            "PaymentProcessing",
+            "RevenueReporting",
+            "StripeAutomation",
+            "TaxReporting",
+          ],
+        },
+        MKT: {
+          name: "Marketing",
+          subcategories: [
+            "ABTesting",
+            "ConversionTracking",
+            "CustomerSegmentation",
+            "EmailCampaign",
+            "FunnelAutomation",
+            "KeywordTracking",
+            "LeadGeneration",
+            "LeadQualification",
+            "MarketingAnalytics",
+            "Newsletter",
+            "SEOAutomation",
+          ],
+        },
+        PROD: {
+          name: "Productivity",
+          subcategories: [
+            "CalendarSync",
+            "KnowledgeBaseUpdate",
+            "MeetingScheduling",
+            "NoteSync",
+            "PersonalAssistant",
+            "ReminderSystem",
+            "TaskAssignment",
+            "TaskAutomation",
+            "TimeTracking",
+            "WorkflowManager",
+          ],
+        },
+        SCRAPE: {
+          name: "Web Scraping",
+          subcategories: ["PriceScraping", "WebScraping"],
+        },
+        SEC: {
+          name: "Security & Monitoring",
+          subcategories: [
+            "AuditLogging",
+            "ComplianceMonitoring",
+            "IncidentResponse",
+            "RateLimitProtection",
+          ],
+        },
+        SOC: {
+          name: "Social Media",
+          subcategories: [
+            "CommentMonitoring",
+            "DiscordBot",
+            "InstagramAnalytics",
+            "InstagramPost",
+            "LinkedInLeadCapture",
+            "LinkedInPost",
+            "RedditPoster",
+            "SocialScheduling",
+            "TelegramBot",
+            "TikTokAutomation",
+            "TwitterMonitoring",
+            "TwitterPost",
+            "YouTubeUploader",
+          ],
+        },
+        TRIG: {
+          name: "Scheduling & Triggers",
+          subcategories: ["CronScheduling"],
+        },
+      };
+
+      // Parse category and subcategory from filename
+      function parseFileNameMetadata(fileName) {
+        // Expected format: [category, subcategory] proper name.json
+        const match = fileName.match(/^\[([^,]+),\s*([^\]]+)\]\s*(.+)\.json$/);
+
+        if (match) {
+          const categoryCode = match[1].trim();
+          const subcategory = match[2].trim();
+          const properName = match[3].trim();
+
+          // Look up full category name
+          const categoryInfo = CATEGORY_SUBCATEGORY_MAP[categoryCode];
+          const categoryName = categoryInfo ? categoryInfo.name : categoryCode;
+
+          return {
+            category: categoryName,
+            categoryCode: categoryCode,
+            subcategory: subcategory,
+            displayName: properName,
+            isValid: true,
+          };
+        }
+
+        // Fallback for files not following the naming convention
+        return {
+          category: "Uncategorized",
+          categoryCode: "OTHER",
+          subcategory: "Other",
+          displayName: fileName.replace(".json", ""),
+          isValid: false,
+        };
+      }
+
+      // Trigger type detection patterns - based on actual n8n node types
+      const TRIGGER_PATTERNS = {
+        Manual: ["manualtrigger", "executeworkflowtrigger"],
+        Schedule: ["scheduletrigger"],
+        Webhook: ["webhook"],
+        Form: ["formtrigger"],
+        Chat: ["chattrigger"],
+        "n8n Trigger": ["n8ntrigger"],
+        Error: ["errortrigger"],
+        "Local File": ["localfiletrigger"],
+        "App Trigger": [
+          "activecampaigntrigger",
+          "asanatrigger",
+          "awss3trigger",
+          "bambohrtrigger",
+          "bitbuckettrigger",
+          "boxtrigger",
+          "calendlytrigger",
+          "clickuptrigger",
+          "discordtrigger",
+          "discoursetrigger",
+          "dropboxtrigger",
+          "figmatrigger",
+          "flowtrigger",
+          "githubtrigger",
+          "gitlabtrigger",
+          "googlecalendartrigger",
+          "googledrivetrigger",
+          "googlesheetstrigger",
+          "gravityformstrigger",
+          "helpscoutrigger",
+          "hubspottrigger",
+          "intercomtrigger",
+          "jiratrigger",
+          "jotformtrigger",
+          "kafkatrigger",
+          "magento2trigger",
+          "mailchimptrigger",
+          "mailguntrigger",
+          "mattermosttrigger",
+          "microsoftoutlooktrigger",
+          "microsoftteamstrigger",
+          "mqtttrigger",
+          "notiontrigger",
+          "pipedrivetrigger",
+          "postgrestrigger",
+          "rabbitmqtrigger",
+          "redistrigger",
+          "salesforcetrigger",
+          "shopifytrigger",
+          "slacktrigger",
+          "stripetrigger",
+          "surveymoneytrigger",
+          "telegramtrigger",
+          "thehivetrigger",
+          "trellotrigger",
+          "typeformtrigger",
+          "webflowtrigger",
+          "woocommercetrigger",
+          "wufootrigger",
+          "xerotrigger",
+          "zendesktrigger",
+          "zohocrmtrigger",
+        ],
+      };
+
+      function showFolderModal() {
+        DOM.folderModal.classList.remove("hidden");
+      }
+
+      function hideFolderModal() {
+        DOM.folderModal.classList.add("hidden");
+      }
+
+      async function selectFolder() {
+        try {
+          const dirHandle = await window.showDirectoryPicker();
+          state.dirHandle = dirHandle; // Store for reload
+          await loadWorkflowsFromFolder(dirHandle);
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            showMessage("Error accessing folder: " + error.message, "error");
+            console.error("Folder access error:", error);
+          }
+        }
+      }
+
+      async function loadWorkflowsFromFolder(dirHandle) {
+        try {
+          // Verify we have permission to read the directory
+          const permission = await dirHandle.queryPermission({ mode: "read" });
+
+          if (permission === "denied") {
+            showMessage(
+              "Permission denied to access folder. Please grant access.",
+              "error"
+            );
+            return;
+          }
+
+          if (permission === "prompt") {
+            const requestPermission = await dirHandle.requestPermission({
+              mode: "read",
+            });
+            if (requestPermission === "denied") {
+              showMessage("Permission denied to access folder.", "error");
+              return;
+            }
+          }
+
+          const files = [];
+          let fileCount = 0;
+          let processedCount = 0;
+          const BATCH_SIZE = 100; // Process files in batches to avoid UI freeze
+          let batch = [];
+
+          showMessage(
+            "Loading workflows... This may take a moment for large folders.",
+            "info"
+          );
+
+          for await (const entry of dirHandle.values()) {
+            try {
+              if (entry.kind === "file" && entry.name.endsWith(".json")) {
+                fileCount++;
+                batch.push(entry);
+
+                // Process in batches to keep UI responsive
+                if (batch.length >= BATCH_SIZE) {
+                  await processBatch(batch, files);
+                  processedCount += batch.length;
+                  showMessage(
+                    `Loading... ${processedCount} workflows processed`,
+                    "info"
+                  );
+                  batch = [];
+
+                  // Small delay to allow UI to update
+                  await new Promise((resolve) => setTimeout(resolve, 10));
+                }
+              }
+            } catch (fileError) {
+              console.warn(`Error loading file ${entry.name}:`, fileError);
+            }
+          }
+
+          // Process remaining files
+          if (batch.length > 0) {
+            await processBatch(batch, files);
+            processedCount += batch.length;
+          }
+
+          if (files.length === 0 && fileCount === 0) {
+            showMessage(
+              "No JSON workflow files found in the selected folder.",
+              "info"
+            );
+          } else if (files.length === 0) {
+            showMessage(
+              "Found JSON files but could not load any workflows.",
+              "error"
+            );
+          } else {
+            state.files = files;
+            populateServicesFilter();
+            populateSubcategoryFilter("all"); // Initialize with all subcategories
+            render();
+            showMessage(
+              `Successfully loaded ${files.length} workflow(s)`,
+              "success"
+            );
+          }
+        } catch (error) {
+          console.error("Load error:", error);
+
+          if (error.name === "NotFoundError") {
+            showMessage(
+              "The selected folder could not be accessed. It may have been moved or deleted. Please select the folder again.",
+              "error"
+            );
+            setTimeout(() => showFolderModal(), 1000);
+          } else if (error.name === "NotAllowedError") {
+            showMessage(
+              "Permission denied to access the folder. Please grant permission and try again.",
+              "error"
+            );
+            setTimeout(() => showFolderModal(), 1000);
+          } else {
+            showMessage("Error loading workflows: " + error.message, "error");
+          }
+        }
+      }
+
+      async function processBatch(entries, files) {
+        for (const entry of entries) {
+          try {
+            const file = await entry.getFile();
+            const metadata = await extractWorkflowMetadata(file);
+
+            // Collect all node types for filter
+            if (metadata.isValid) {
+              metadata.nodeTypes.forEach((type) =>
+                state.allNodeTypes.add(type)
+              );
+              metadata.servicesUsed.forEach((service) =>
+                state.allServices.add(service)
+              );
+            }
+
+            files.push({
+              name: file.name,
+              size: file.size,
+              modified: file.lastModified,
+              file: file,
+              metadata: metadata,
+            });
+          } catch (error) {
+            console.warn(`Error processing ${entry.name}:`, error);
+          }
+        }
+      }
+
+      async function extractWorkflowMetadata(file) {
+        try {
+          const text = await file.text();
+          const json = JSON.parse(text);
+
+          if (!json.nodes || !Array.isArray(json.nodes)) {
+            return {
+              isValid: false,
+              errorMessage: "Invalid workflow: missing nodes array",
+            };
+          }
+
+          // Parse category and subcategory from filename
+          const fileNameData = parseFileNameMetadata(file.name);
+
+          // Filter out sticky note nodes from all processing
+          const realNodes = json.nodes.filter(
+            (node) => node.type !== "n8n-nodes-base.stickyNote"
+          );
+
+          const nodesCount = realNodes.length;
+          const connections = json.connections || {};
+          const connectionsCount = Object.keys(connections).reduce(
+            (sum, nodeId) => {
+              const nodeConnections = connections[nodeId];
+              return (
+                sum +
+                Object.keys(nodeConnections).reduce((nodeSum, outputType) => {
+                  return (
+                    nodeSum +
+                    (Array.isArray(nodeConnections[outputType])
+                      ? nodeConnections[outputType].reduce(
+                          (outputSum, conns) =>
+                            outputSum + (conns ? conns.length : 0),
+                          0
+                        )
+                      : 0)
+                  );
+                }, 0)
+              );
+            },
+            0
+          );
+
+          const nodeTypes = realNodes.map((node) => node.type).filter(Boolean);
+          const uniqueNodeTypes = [...new Set(nodeTypes)];
+
+          const triggerNodes = realNodes.filter(
+            (node) =>
+              node.type &&
+              (node.type.toLowerCase().includes("trigger") ||
+                node.type === "n8n-nodes-base.webhook" ||
+                node.type === "n8n-nodes-base.cron")
+          );
+          const triggersCount = triggerNodes.length;
+
+          // Calculate complexity score (excluding sticky notes)
+          const complexityScore = calculateComplexityScore(
+            nodesCount,
+            connectionsCount,
+            triggersCount,
+            uniqueNodeTypes.length
+          );
+
+          // Detect trigger types
+          const triggerTypes = detectTriggerTypes(nodeTypes);
+
+          // Extract services used
+          const servicesUsed = extractServicesUsed(nodeTypes);
+
+          return {
+            isValid: true,
+            name: fileNameData.displayName,
+            displayName: fileNameData.displayName,
+            nodesCount,
+            connectionsCount,
+            triggersCount,
+            nodeTypes: uniqueNodeTypes,
+            complexityScore,
+            category: fileNameData.category,
+            categoryCode: fileNameData.categoryCode,
+            subcategory: fileNameData.subcategory,
+            triggerTypes,
+            servicesUsed,
+          };
+        } catch (error) {
+          return {
+            isValid: false,
+            errorMessage: error.message || "Failed to parse JSON",
+          };
+        }
+      }
+
+      function calculateComplexityScore(
+        nodes,
+        connections,
+        triggers,
+        uniqueNodes
+      ) {
+        const nodeWeight = nodes * 0.4;
+        const connectionWeight = connections * 0.3;
+        const triggerWeight = triggers * 2;
+        const uniqueNodeWeight = uniqueNodes * 0.5;
+        return nodeWeight + connectionWeight + triggerWeight + uniqueNodeWeight;
+      }
+
+      function detectTriggerTypes(nodeTypes) {
+        const triggerTypes = new Set();
+
+        nodeTypes.forEach((nodeType) => {
+          const lowerType = nodeType.toLowerCase();
+
+          for (const [triggerName, patterns] of Object.entries(
+            TRIGGER_PATTERNS
+          )) {
+            if (patterns.some((pattern) => lowerType.includes(pattern))) {
+              triggerTypes.add(triggerName);
+            }
+          }
+        });
+
+        return Array.from(triggerTypes);
+      }
+
+      function extractServicesUsed(nodeTypes) {
+        const services = new Set();
+
+        nodeTypes.forEach((nodeType) => {
+          const nodeName = getNodeName(nodeType);
+          if (nodeName) {
+            services.add(nodeName);
+          }
+        });
+
+        return Array.from(services).sort();
+      }
+
+      function getNodeName(fullType) {
+        if (!fullType) return "";
+        const parts = fullType.split(".");
+        const name = parts[parts.length - 1];
+        return name
+          .replace(/([A-Z])/g, " $1")
+          .trim()
+          .replace(/\s+/g, " ");
+      }
+
+      function populateSubcategoryFilter(categoryCode) {
+        // Clear existing options
+        DOM.subcategorySelect.innerHTML =
+          '<option value="all">All Subcategories</option>';
+
+        if (categoryCode === "all") {
+          // Show ALL subcategories from ALL categories
+          const allSubcategories = new Set();
+          Object.values(CATEGORY_SUBCATEGORY_MAP).forEach((categoryInfo) => {
+            if (categoryInfo.subcategories) {
+              categoryInfo.subcategories.forEach((sub) =>
+                allSubcategories.add(sub)
+              );
+            }
+          });
+
+          // Sort and add all subcategories
+          Array.from(allSubcategories)
+            .sort()
+            .forEach((subcategory) => {
+              const option = document.createElement("option");
+              option.value = subcategory;
+              option.textContent = subcategory;
+              DOM.subcategorySelect.appendChild(option);
+            });
+        } else {
+          // Show only subcategories for the selected category
+          const categoryInfo = CATEGORY_SUBCATEGORY_MAP[categoryCode];
+          if (categoryInfo && categoryInfo.subcategories) {
+            categoryInfo.subcategories.forEach((subcategory) => {
+              const option = document.createElement("option");
+              option.value = subcategory;
+              option.textContent = subcategory;
+              DOM.subcategorySelect.appendChild(option);
+            });
+          }
+        }
+      }
+
+      function populateServicesFilter() {
+        const sortedServices = Array.from(state.allServices).sort();
+
+        // Clear existing options
+        DOM.servicesDropdown.innerHTML = "";
+
+        sortedServices.forEach((service) => {
+          const option = document.createElement("div");
+          option.className = "multi-select-option";
+          const id = `service-${service.toLowerCase().replace(/\s+/g, "-")}`;
+          option.innerHTML = `
+            <input type="checkbox" value="${escapeHtml(service)}" id="${id}">
+            <label for="${id}">${escapeHtml(service)}</label>
+          `;
+
+          // Add change listener immediately
+          const checkbox = option.querySelector('input[type="checkbox"]');
+          checkbox.addEventListener("change", () => {
+            updateServicesFromCheckboxes();
+          });
+
+          DOM.servicesDropdown.appendChild(option);
+        });
+      }
+
+      function populateTriggerTypeListeners() {
+        // Add change listeners to all trigger type checkboxes
+        DOM.triggerTypeDropdown
+          .querySelectorAll('input[type="checkbox"]')
+          .forEach((cb) => {
+            cb.addEventListener("change", () => {
+              updateTriggerTypesFromCheckboxes();
+            });
+          });
+      }
+
+      function updateServicesFromCheckboxes() {
+        const selected = Array.from(
+          DOM.servicesDropdown.querySelectorAll(
+            'input[type="checkbox"]:checked'
+          )
+        ).map((cb) => cb.value);
+
+        state.servicesFilters = selected;
+        updateServicesUI(selected);
+        render();
+      }
+
+      function updateTriggerTypesFromCheckboxes() {
+        const selected = Array.from(
+          DOM.triggerTypeDropdown.querySelectorAll(
+            'input[type="checkbox"]:checked'
+          )
+        ).map((cb) => cb.value);
+
+        state.triggerTypeFilters = selected;
+        updateTriggerTypeUI(selected);
+        render();
+      }
+
+      function setupMultiSelectListeners() {
+        // Trigger Type multi-select - keeps dropdown open, updates immediately
+        DOM.triggerTypeTrigger.addEventListener("click", (e) => {
+          e.stopPropagation();
+          DOM.triggerTypeDropdown.classList.toggle("show");
+          DOM.servicesDropdown.classList.remove("show");
+        });
+
+        // Services multi-select - keeps dropdown open, updates immediately
+        DOM.servicesTrigger.addEventListener("click", (e) => {
+          e.stopPropagation();
+          DOM.servicesDropdown.classList.toggle("show");
+          DOM.triggerTypeDropdown.classList.remove("show");
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener("click", (e) => {
+          if (
+            !DOM.servicesDropdown.contains(e.target) &&
+            !DOM.servicesTrigger.contains(e.target)
+          ) {
+            DOM.servicesDropdown.classList.remove("show");
+          }
+          if (
+            !DOM.triggerTypeDropdown.contains(e.target) &&
+            !DOM.triggerTypeTrigger.contains(e.target)
+          ) {
+            DOM.triggerTypeDropdown.classList.remove("show");
+          }
+        });
+
+        // Prevent dropdown close when clicking inside them
+        DOM.servicesDropdown.addEventListener("click", (e) => {
+          e.stopPropagation();
+        });
+
+        DOM.triggerTypeDropdown.addEventListener("click", (e) => {
+          e.stopPropagation();
+        });
+
+        // Setup trigger type checkbox listeners
+        populateTriggerTypeListeners();
+      }
+
+      function updateTriggerTypeUI(selected) {
+        if (selected.length === 0) {
+          DOM.triggerTypeLabel.textContent = "Select Triggers";
+          DOM.triggerTypeCount.classList.add("hidden");
+          DOM.triggerTypeTrigger.classList.remove("has-selection");
+        } else {
+          DOM.triggerTypeLabel.textContent =
+            selected.length === 1 ? selected[0] : "Multiple";
+          DOM.triggerTypeCount.textContent = selected.length;
+          DOM.triggerTypeCount.classList.remove("hidden");
+          DOM.triggerTypeTrigger.classList.add("has-selection");
+        }
+      }
+
+      function updateServicesUI(selected) {
+        if (selected.length === 0) {
+          DOM.servicesLabel.textContent = "Select Nodes";
+          DOM.servicesCount.classList.add("hidden");
+          DOM.servicesTrigger.classList.remove("has-selection");
+        } else {
+          DOM.servicesLabel.textContent =
+            selected.length === 1 ? selected[0] : "Multiple";
+          DOM.servicesCount.textContent = selected.length;
+          DOM.servicesCount.classList.remove("hidden");
+          DOM.servicesTrigger.classList.add("has-selection");
+        }
+      }
+
+      function getComplexityLabel(score) {
+        if (score < 15) return "low";
+        if (score < 40) return "medium";
+        if (score < 70) return "high";
+        return "complex";
+      }
+
+      function getComplexityText(score) {
+        if (score < 15) return "Low";
+        if (score < 40) return "Medium";
+        if (score < 70) return "High";
+        return "Complex";
+      }
+
+      function filterFiles() {
+        let filtered = state.files;
+
+        // Search filter
+        if (state.searchQuery) {
+          const query = state.searchQuery.toLowerCase();
+          filtered = filtered.filter((fileData) => {
+            if (!fileData.metadata.isValid) return false;
+            const nameMatch = fileData.name.toLowerCase().includes(query);
+            const nodeMatch = fileData.metadata.nodeTypes.some((type) =>
+              type.toLowerCase().includes(query)
+            );
+            const serviceMatch = fileData.metadata.servicesUsed.some(
+              (service) => service.toLowerCase().includes(query)
+            );
+            const categoryMatch = fileData.metadata.category
+              .toLowerCase()
+              .includes(query);
+            return nameMatch || nodeMatch || serviceMatch || categoryMatch;
+          });
+        }
+
+        // Complexity filter
+        if (state.complexityFilter !== "all") {
+          filtered = filtered.filter((fileData) => {
+            if (!fileData.metadata.isValid) return false;
+            const label = getComplexityLabel(fileData.metadata.complexityScore);
+            return label === state.complexityFilter;
+          });
+        }
+
+        // Category filter
+        if (state.categoryFilter !== "all") {
+          filtered = filtered.filter((fileData) => {
+            if (!fileData.metadata.isValid) return false;
+            return fileData.metadata.categoryCode === state.categoryFilter;
+          });
+        }
+
+        // Subcategory filter
+        if (state.subcategoryFilter !== "all") {
+          filtered = filtered.filter((fileData) => {
+            if (!fileData.metadata.isValid) return false;
+            return fileData.metadata.subcategory === state.subcategoryFilter;
+          });
+        }
+
+        // Trigger type filter
+        if (state.triggerTypeFilters.length > 0) {
+          filtered = filtered.filter((fileData) => {
+            if (!fileData.metadata.isValid) return false;
+            return state.triggerTypeFilters.some((triggerType) =>
+              fileData.metadata.triggerTypes.includes(triggerType)
+            );
+          });
+        }
+
+        // Services filter
+        if (state.servicesFilters.length > 0) {
+          filtered = filtered.filter((fileData) => {
+            if (!fileData.metadata.isValid) return false;
+            return state.servicesFilters.some((service) =>
+              fileData.metadata.servicesUsed.includes(service)
+            );
+          });
+        }
+
+        return filtered;
+      }
+
+      function sortFiles(files) {
+        const sorted = [...files];
+
+        switch (state.currentSort) {
+          case "name":
+            sorted.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+          case "name-desc":
+            sorted.sort((a, b) => b.name.localeCompare(a.name));
+            break;
+          case "complexity":
+            sorted.sort((a, b) => {
+              const scoreA = a.metadata.isValid
+                ? a.metadata.complexityScore
+                : 0;
+              const scoreB = b.metadata.isValid
+                ? b.metadata.complexityScore
+                : 0;
+              return scoreA - scoreB;
+            });
+            break;
+          case "complexity-desc":
+            sorted.sort((a, b) => {
+              const scoreA = a.metadata.isValid
+                ? a.metadata.complexityScore
+                : 0;
+              const scoreB = b.metadata.isValid
+                ? b.metadata.complexityScore
+                : 0;
+              return scoreB - scoreA;
+            });
+            break;
+          case "nodes":
+            sorted.sort((a, b) => {
+              const nodesA = a.metadata.isValid ? a.metadata.nodesCount : 0;
+              const nodesB = b.metadata.isValid ? b.metadata.nodesCount : 0;
+              return nodesA - nodesB;
+            });
+            break;
+          case "nodes-desc":
+            sorted.sort((a, b) => {
+              const nodesA = a.metadata.isValid ? a.metadata.nodesCount : 0;
+              const nodesB = b.metadata.isValid ? b.metadata.nodesCount : 0;
+              return nodesB - nodesA;
+            });
+            break;
+          case "modified":
+            sorted.sort((a, b) => b.modified - a.modified);
+            break;
+          case "modified-asc":
+            sorted.sort((a, b) => a.modified - b.modified);
+            break;
+        }
+
+        return sorted;
+      }
+
+      function render() {
+        const filtered = filterFiles();
+        const sorted = sortFiles(filtered);
+        state.displayedFiles = sorted;
+        state.currentPage = 1;
+        renderPage();
+      }
+
+      function renderPage() {
+        const startIndex = 0;
+        const endIndex = state.currentPage * state.itemsPerPage;
+        const pageFiles = state.displayedFiles.slice(startIndex, endIndex);
+
+        DOM.gridContainer.innerHTML = pageFiles.map(createFileCard).join("");
+
+        updateStats(pageFiles.length, state.displayedFiles.length);
+        updateLoadMoreBtn(pageFiles.length);
+      }
+
+      function createFileCard(fileData) {
+        if (!fileData.metadata.isValid) {
+          return `
+                    <div class="file-card">
+                        <div class="file-card-header">
+                            <div class="file-card-title">[Invalid] ${escapeHtml(
+                              fileData.name
+                            )}</div>
+                        </div>
+                        <div class="file-card-meta">
+                            <span style="color: var(--complexity-high);">
+                                ${escapeHtml(
+                                  fileData.metadata.errorMessage ||
+                                    "Invalid workflow file"
+                                )}
+                            </span>
+                        </div>
+                    </div>
+                `;
+        }
+
+        const metadata = fileData.metadata;
+        const complexityLabel = getComplexityLabel(metadata.complexityScore);
+        const complexityText = getComplexityText(metadata.complexityScore);
+
+        return `
+                <div class="file-card" onclick="openJsonPreview('${escapeHtml(
+                  fileData.name
+                )}')">
+                    <div class="file-card-header">
+                        <div class="file-card-title">${escapeHtml(
+                          metadata.name
+                        )}</div>
+                    </div>
+                    <div class="file-card-meta">
+                        <div class="file-card-meta-row">
+                            <div class="meta-item">
+                                <span class="meta-label">Category:</span>
+                                <span class="category-badge">${escapeHtml(
+                                  metadata.category
+                                )}</span>
+                            </div>
+                        </div>
+                        <div class="file-card-meta-row">
+                            <div class="meta-item">
+                                <span class="meta-label">Nodes:</span>
+                                <span>${metadata.nodesCount}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Triggers:</span>
+                                <span>${metadata.triggersCount}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Complexity:</span>
+                                <span class="complexity-badge complexity-${complexityLabel}">
+                                    ${complexityText}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+      }
+
+      async function openJsonPreview(fileName) {
+        try {
+          const fileData = state.files.find((f) => f.name === fileName);
+          if (!fileData) return;
+
+          state.currentJsonFile = fileData;
+
+          const text = await fileData.file.text();
+          const json = JSON.parse(text);
+
+          DOM.jsonModalTitle.textContent = fileData.metadata.name || fileName;
+          DOM.jsonPreview.textContent = JSON.stringify(json, null, 2);
+
+          const metadata = fileData.metadata;
+
+          if (metadata.isValid) {
+            const complexityLabel = getComplexityLabel(
+              metadata.complexityScore
+            );
+            const complexityText = getComplexityText(metadata.complexityScore);
+            const sizeKB = (fileData.size / 1024).toFixed(1);
+            const modifiedDate = new Date(fileData.modified).toLocaleDateString(
+              "en-US",
+              {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            );
+
+            // Get unique node types (short names only) from this workflow
+            const uniqueNodeNames = [
+              ...new Set(metadata.nodeTypes.map((type) => getNodeName(type))),
+            ]
+              .filter(Boolean)
+              .sort();
+
+            // Create node type tags with trigger highlighting
+            const nodeTags = uniqueNodeNames
+              .map((shortName) => {
+                const fullType = metadata.nodeTypes.find(
+                  (type) => getNodeName(type) === shortName
+                );
+                const isTrigger =
+                  fullType &&
+                  (fullType.toLowerCase().includes("trigger") ||
+                    fullType === "n8n-nodes-base.webhook" ||
+                    fullType === "n8n-nodes-base.cron");
+                const tagClass = isTrigger ? "modal-tag trigger" : "modal-tag";
+                return `<span class="${tagClass}">${escapeHtml(
+                  shortName
+                )}</span>`;
+              })
+              .join("");
+
+            // Create trigger type tags
+            const triggerTypeTags = metadata.triggerTypes
+              .map(
+                (trigger) =>
+                  `<span class="modal-tag trigger">${escapeHtml(
+                    trigger
+                  )}</span>`
+              )
+              .join("");
+
+            DOM.jsonModalInfo.innerHTML = `
+                        <div class="modal-info-grid">
+                            <div class="modal-info-item">
+                                <span class="modal-info-label">Category</span>
+                                <span class="modal-info-value">
+                                    <span class="category-badge">${escapeHtml(
+                                      metadata.category
+                                    )}</span>
+                                </span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-info-label">Nodes</span>
+                                <span class="modal-info-value">${
+                                  metadata.nodesCount
+                                }</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-info-label">Connections</span>
+                                <span class="modal-info-value">${
+                                  metadata.connectionsCount
+                                }</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-info-label">Triggers</span>
+                                <span class="modal-info-value">${
+                                  metadata.triggersCount
+                                }</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-info-label">Complexity</span>
+                                <span class="modal-info-value">
+                                    <span class="complexity-badge complexity-${complexityLabel}">${complexityText}</span>
+                                </span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-info-label">Complexity Score</span>
+                                <span class="modal-info-value">${metadata.complexityScore.toFixed(
+                                  1
+                                )}</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-info-label">File Size</span>
+                                <span class="modal-info-value">${sizeKB} KB</span>
+                            </div>
+                            <div class="modal-info-item">
+                                <span class="modal-info-label">Modified</span>
+                                <span class="modal-info-value">${modifiedDate}</span>
+                            </div>
+                        </div>
+                        ${
+                          triggerTypeTags
+                            ? `
+                        <div class="modal-tags-section">
+                            <div class="modal-tags-label">Trigger Types (${metadata.triggerTypes.length})</div>
+                            <div class="modal-tags">
+                                ${triggerTypeTags}
+                            </div>
+                        </div>
+                        `
+                            : ""
+                        }
+                        ${
+                          uniqueNodeNames.length > 0
+                            ? `
+                        <div class="modal-tags-section">
+                            <div class="modal-tags-label">Node Types Used (${uniqueNodeNames.length})</div>
+                            <div class="modal-tags">
+                                ${nodeTags}
+                            </div>
+                        </div>
+                        `
+                            : ""
+                        }
+                    `;
+          } else {
+            DOM.jsonModalInfo.innerHTML = `
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Error</span>
+                            <span class="modal-info-value" style="color: var(--complexity-high);">
+                                ${
+                                  metadata?.errorMessage ||
+                                  "Invalid JSON - Unable to extract metadata"
+                                }
+                            </span>
+                        </div>
+                    `;
+          }
+
+          document.body.classList.add("modal-open");
+          DOM.jsonModal.classList.remove("hidden");
+
+          // Render workflow visualization after modal is fully visible and sized
+          if (metadata.isValid && json) {
+            setTimeout(() => {
+              try {
+                console.log("Calling renderWorkflowCanvas with workflow data");
+                renderWorkflowCanvas(json);
+              } catch (err) {
+                console.error("Error rendering workflow canvas:", err);
+                console.error("Stack trace:", err.stack);
+              }
+            }, 500);
+          }
+        } catch (error) {
+          showMessage("Error reading JSON file: " + error.message, "error");
+          console.error("JSON preview error:", error);
+        }
+      }
+
+      // Workflow SVG Visualization
+      let svgState = {
+        zoom: 1,
+        panX: 0,
+        panY: 0,
+        isDragging: false,
+        startX: 0,
+        startY: 0,
+      };
+
+      function renderWorkflowCanvas(workflowJson) {
+        console.log("=== renderWorkflowSvg called ===");
+        console.log("Workflow JSON:", workflowJson);
+
+        const svg = document.getElementById("workflowSvg");
+        const nodesGroup = document.getElementById("workflowNodes");
+        const connectionsGroup = document.getElementById("workflowConnections");
+        const gridGroup = document.getElementById("workflowGrid");
+
+        if (!svg || !nodesGroup || !connectionsGroup) {
+          console.error("SVG elements not found");
+          return;
+        }
+
+        // Clear existing content
+        nodesGroup.innerHTML = "";
+        connectionsGroup.innerHTML = "";
+        gridGroup.innerHTML = "";
+
+        // Filter out sticky note nodes
+        const allNodes = workflowJson.nodes || [];
+        const nodes = allNodes.filter(
+          (node) => node.type !== "n8n-nodes-base.stickyNote"
+        );
+        const connections = workflowJson.connections || {};
+
+        console.log("Nodes found (excluding sticky notes):", nodes.length);
+
+        if (nodes.length === 0) {
+          // Show "no nodes" message
+          const text = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text"
+          );
+          text.setAttribute("x", "400");
+          text.setAttribute("y", "250");
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("fill", "#8b949e");
+          text.setAttribute("font-size", "14");
+          text.textContent = "No nodes to display";
+          nodesGroup.appendChild(text);
+          return;
+        }
+
+        // Calculate node positions with auto-centering
+        const nodePositions = calculateNodePositions(nodes);
+
+        // Draw grid
+        drawSvgGrid(gridGroup);
+
+        // Draw connections
+        drawSvgConnections(connectionsGroup, connections, nodePositions);
+
+        // Draw nodes
+        drawSvgNodes(nodesGroup, nodes, nodePositions);
+
+        // Setup interactions
+        setupSvgInteractions(svg);
+
+        console.log("=== SVG rendering complete ===");
+      }
+
+      function calculateNodePositions(nodes) {
+        const positions = {};
+
+        // Find bounds
+        let minX = Infinity,
+          minY = Infinity;
+        let maxX = -Infinity,
+          maxY = -Infinity;
+        let hasPositions = false;
+
+        nodes.forEach((node) => {
+          if (
+            node.position &&
+            Array.isArray(node.position) &&
+            node.position.length >= 2
+          ) {
+            minX = Math.min(minX, node.position[0]);
+            minY = Math.min(minY, node.position[1]);
+            maxX = Math.max(maxX, node.position[0]);
+            maxY = Math.max(maxY, node.position[1]);
+            hasPositions = true;
+          }
+        });
+
+        // Calculate center offset
+        const targetCenterX = 400;
+        const targetCenterY = 250;
+        let offsetX = 0,
+          offsetY = 0;
+
+        if (hasPositions && isFinite(minX)) {
+          const workflowCenterX = (minX + maxX) / 2;
+          const workflowCenterY = (minY + maxY) / 2;
+          offsetX = targetCenterX - workflowCenterX;
+          offsetY = targetCenterY - workflowCenterY;
+          console.log("Workflow centered:", { offsetX, offsetY });
+        }
+
+        // Assign positions
+        nodes.forEach((node, index) => {
+          let x, y;
+
+          if (
+            node.position &&
+            Array.isArray(node.position) &&
+            node.position.length >= 2
+          ) {
+            x = node.position[0] + offsetX;
+            y = node.position[1] + offsetY;
+          } else {
+            // Grid fallback
+            const col = index % 4;
+            const row = Math.floor(index / 4);
+            x = 150 + col * 200;
+            y = 150 + row * 120;
+          }
+
+          positions[node.name] = { x, y, node };
+        });
+
+        return positions;
+      }
+
+      function drawSvgGrid(gridGroup) {
+        // Draw a very large grid that covers any possible pan/zoom
+        const gridSize = 20;
+        const gridExtent = 10000; // Very large extent
+
+        // Vertical lines
+        for (let x = -gridExtent; x <= gridExtent; x += gridSize) {
+          const line = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "line"
+          );
+          line.setAttribute("x1", x);
+          line.setAttribute("y1", -gridExtent);
+          line.setAttribute("x2", x);
+          line.setAttribute("y2", gridExtent);
+          line.setAttribute("class", "workflow-grid");
+          gridGroup.appendChild(line);
+        }
+
+        // Horizontal lines
+        for (let y = -gridExtent; y <= gridExtent; y += gridSize) {
+          const line = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "line"
+          );
+          line.setAttribute("x1", -gridExtent);
+          line.setAttribute("y1", y);
+          line.setAttribute("x2", gridExtent);
+          line.setAttribute("y2", y);
+          line.setAttribute("class", "workflow-grid");
+          gridGroup.appendChild(line);
+        }
+      }
+
+      function drawSvgConnections(
+        connectionsGroup,
+        connections,
+        nodePositions
+      ) {
+        for (const sourceName in connections) {
+          const sourcePos = nodePositions[sourceName];
+          if (!sourcePos) continue;
+
+          const nodeConns = connections[sourceName];
+          for (const outputType in nodeConns) {
+            const outputs = nodeConns[outputType];
+            if (!Array.isArray(outputs)) continue;
+
+            outputs.forEach((outputConns) => {
+              if (!Array.isArray(outputConns)) return;
+              outputConns.forEach((conn) => {
+                const targetPos = nodePositions[conn.node];
+                if (!targetPos) return;
+
+                // Draw bezier curve
+                const path = document.createElementNS(
+                  "http://www.w3.org/2000/svg",
+                  "path"
+                );
+                const startX = sourcePos.x + 80; // nodeWidth/2
+                const startY = sourcePos.y;
+                const endX = targetPos.x - 80; // nodeWidth/2
+                const endY = targetPos.y;
+                const cpX = (startX + endX) / 2;
+
+                const d = `M ${startX} ${startY} C ${cpX} ${startY}, ${cpX} ${endY}, ${endX} ${endY}`;
+                path.setAttribute("d", d);
+                path.setAttribute("class", "workflow-connection");
+                path.setAttribute("marker-end", "url(#arrowhead)");
+                connectionsGroup.appendChild(path);
+              });
+            });
+          }
+        }
+      }
+
+      function drawSvgNodes(nodesGroup, nodes, nodePositions) {
+        nodes.forEach((node) => {
+          const pos = nodePositions[node.name];
+          if (!pos) return;
+
+          const isTrigger =
+            node.type &&
+            (node.type.toLowerCase().includes("trigger") ||
+              node.type === "n8n-nodes-base.webhook");
+
+          // Get readable node type name
+          const nodeType = node.type
+            ? node.type
+                .split(".")
+                .pop()
+                .replace(/([A-Z])/g, " $1")
+                .trim()
+            : "Unknown";
+
+          // Create node group
+          const nodeGroup = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "g"
+          );
+          nodeGroup.setAttribute(
+            "class",
+            isTrigger ? "workflow-node trigger" : "workflow-node regular"
+          );
+
+          // Increase node height to accommodate type label
+          const nodeWidth = 160;
+          const nodeHeight = 55;
+
+          // Create rectangle
+          const rect = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "rect"
+          );
+          rect.setAttribute("x", pos.x - nodeWidth / 2);
+          rect.setAttribute("y", pos.y - nodeHeight / 2);
+          rect.setAttribute("width", nodeWidth);
+          rect.setAttribute("height", nodeHeight);
+          nodeGroup.appendChild(rect);
+
+          // Create node type label (top)
+          const typeText = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text"
+          );
+          typeText.setAttribute("x", pos.x);
+          typeText.setAttribute("y", pos.y - 10);
+          typeText.setAttribute("text-anchor", "middle");
+          typeText.setAttribute("class", "node-type");
+
+          let displayType = nodeType;
+          if (displayType.length > 20) {
+            displayType = displayType.substring(0, 18) + "...";
+          }
+          typeText.textContent = displayType;
+          nodeGroup.appendChild(typeText);
+
+          // Create node name text (bottom) - with better truncation
+          const nameText = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text"
+          );
+          nameText.setAttribute("x", pos.x);
+          nameText.setAttribute("y", pos.y + 8);
+          nameText.setAttribute("text-anchor", "middle");
+          nameText.setAttribute("class", "node-name");
+
+          let displayName = node.name || "Unnamed";
+          // Truncate based on character width estimation (monospace ~8px per char)
+          const maxChars = Math.floor((nodeWidth - 16) / 8);
+          if (displayName.length > maxChars) {
+            displayName = displayName.substring(0, maxChars - 3) + "...";
+          }
+          nameText.textContent = displayName;
+          nodeGroup.appendChild(nameText);
+
+          nodesGroup.appendChild(nodeGroup);
+        });
+      }
+
+      function setupSvgInteractions(svg) {
+        const container = svg.parentElement;
+        const nodesGroup = document.getElementById("workflowNodes");
+        const connectionsGroup = document.getElementById("workflowConnections");
+        const gridGroup = document.getElementById("workflowGrid");
+
+        // Apply initial transform
+        function updateTransform() {
+          const transform = `translate(${svgState.panX}, ${svgState.panY}) scale(${svgState.zoom})`;
+          nodesGroup.setAttribute("transform", transform);
+          connectionsGroup.setAttribute("transform", transform);
+          gridGroup.setAttribute("transform", transform);
+        }
+
+        updateTransform();
+
+        // Pan with mouse
+        svg.addEventListener("mousedown", (e) => {
+          svgState.isDragging = true;
+          svgState.startX = e.clientX - svgState.panX;
+          svgState.startY = e.clientY - svgState.panY;
+        });
+
+        svg.addEventListener("mousemove", (e) => {
+          if (!svgState.isDragging) return;
+          svgState.panX = e.clientX - svgState.startX;
+          svgState.panY = e.clientY - svgState.startY;
+          updateTransform();
+        });
+
+        svg.addEventListener("mouseup", () => {
+          svgState.isDragging = false;
+        });
+
+        svg.addEventListener("mouseleave", () => {
+          svgState.isDragging = false;
+        });
+
+        // Zoom with wheel
+        svg.addEventListener("wheel", (e) => {
+          e.preventDefault();
+          const delta = e.deltaY > 0 ? 0.9 : 1.1;
+          svgState.zoom = Math.max(0.1, Math.min(3, svgState.zoom * delta));
+          updateTransform();
+        });
+
+        // Zoom buttons
+        const zoomInBtn = document.getElementById("canvasZoomIn");
+        const zoomOutBtn = document.getElementById("canvasZoomOut");
+        const resetBtn = document.getElementById("canvasReset");
+
+        if (zoomInBtn) {
+          zoomInBtn.onclick = () => {
+            svgState.zoom = Math.min(3, svgState.zoom * 1.2);
+            updateTransform();
+          };
+        }
+
+        if (zoomOutBtn) {
+          zoomOutBtn.onclick = () => {
+            svgState.zoom = Math.max(0.1, svgState.zoom * 0.8);
+            updateTransform();
+          };
+        }
+
+        if (resetBtn) {
+          resetBtn.onclick = () => {
+            svgState.zoom = 1;
+            svgState.panX = 0;
+            svgState.panY = 0;
+            updateTransform();
+          };
+        }
+      }
+
+      function closeJsonPreview() {
+        DOM.jsonModal.classList.add("hidden");
+        document.body.classList.remove("modal-open");
+        state.currentJsonFile = null;
+
+        // Reset SVG state
+        svgState = {
+          zoom: 1,
+          panX: 0,
+          panY: 0,
+          isDragging: false,
+          startX: 0,
+          startY: 0,
+        };
+      }
+
+      async function copyJsonToClipboard() {
+        try {
+          const text = DOM.jsonPreview.textContent;
+          await navigator.clipboard.writeText(text);
+          showMessage("JSON copied to clipboard!", "success");
+        } catch (error) {
+          showMessage("Failed to copy: " + error.message, "error");
+        }
+      }
+
+      function downloadFile(fileName) {
+        try {
+          const fileData =
+            typeof fileName === "string"
+              ? state.files.find((f) => f.name === fileName)
+              : fileName;
+
+          if (!fileData) return;
+
+          const url = URL.createObjectURL(fileData.file);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = fileData.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showMessage(`Downloaded ${fileData.name}`, "success");
+        } catch (error) {
+          showMessage("Error downloading file: " + error.message, "error");
+          console.error("Download error:", error);
+        }
+      }
+
+      function updateLoadMoreBtn(currentCount) {
+        const hasMore = currentCount < state.displayedFiles.length;
+        DOM.loadMoreBtn.classList.toggle("hidden", !hasMore);
+        DOM.loadMoreBtn.disabled = !hasMore;
+      }
+
+      function updateStats(displayed, total) {
+        const message =
+          total === 0
+            ? "No workflows"
+            : `Showing ${displayed} of ${total} workflow${
+                total !== 1 ? "s" : ""
+              }`;
+        DOM.stats.textContent = message;
+      }
+
+      function loadMore() {
+        state.currentPage++;
+        renderPage();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function resetAllFilters() {
+        // Reset all state filters
+        state.searchQuery = "";
+        state.complexityFilter = "all";
+        state.categoryFilter = "all";
+        state.subcategoryFilter = "all";
+        state.triggerTypeFilters = [];
+        state.servicesFilters = [];
+        state.currentSort = "name";
+
+        // Reset UI elements
+        DOM.searchInput.value = "";
+        DOM.categorySelect.value = "all";
+        DOM.subcategorySelect.value = "all";
+        DOM.sortSelect.value = "name";
+        populateSubcategoryFilter("all"); // Clear subcategories
+
+        // Reset complexity buttons
+        document
+          .querySelectorAll("[data-complexity]")
+          .forEach((b) => b.classList.remove("active"));
+        document
+          .querySelector('[data-complexity="all"]')
+          .classList.add("active");
+
+        // Reset trigger type checkboxes and UI
+        DOM.triggerTypeDropdown
+          .querySelectorAll('input[type="checkbox"]')
+          .forEach((cb) => {
+            cb.checked = false;
+          });
+        updateTriggerTypeUI([]);
+
+        // Reset services checkboxes and UI
+        DOM.servicesDropdown
+          .querySelectorAll('input[type="checkbox"]')
+          .forEach((cb) => {
+            cb.checked = false;
+          });
+        updateServicesUI([]);
+
+        // Re-render
+        render();
+        showMessage("All filters reset", "success");
+      }
+
+      function setupEventListeners() {
+        DOM.loadMoreBtn.addEventListener("click", loadMore);
+
+        DOM.grantAccessBtn.addEventListener("click", async () => {
+          hideFolderModal();
+          await selectFolder();
+        });
+
+        DOM.cancelAccessBtn.addEventListener("click", () => {
+          hideFolderModal();
+          showMessage(
+            "Folder access denied. You can reload the page to try again.",
+            "info"
+          );
+        });
+
+        DOM.searchBtn.addEventListener("click", () => {
+          state.searchQuery = DOM.searchInput.value.trim();
+          render();
+        });
+
+        DOM.refreshFolderBtn.addEventListener("click", async () => {
+          // Always show folder picker to select a new/different folder
+          showFolderModal();
+        });
+
+        DOM.searchInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            state.searchQuery = DOM.searchInput.value.trim();
+            render();
+          }
+        });
+
+        DOM.sortSelect.addEventListener("change", (e) => {
+          state.currentSort = e.target.value;
+          render();
+        });
+
+        DOM.categorySelect.addEventListener("change", (e) => {
+          state.categoryFilter = e.target.value;
+          populateSubcategoryFilter(e.target.value);
+          state.subcategoryFilter = "all"; // Reset subcategory when category changes
+          render();
+        });
+
+        DOM.subcategorySelect.addEventListener("change", (e) => {
+          state.subcategoryFilter = e.target.value;
+          render();
+        });
+
+        // Reset all filters button
+        DOM.resetAllBtn.addEventListener("click", resetAllFilters);
+
+        // Complexity filter buttons
+        document.querySelectorAll("[data-complexity]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            document
+              .querySelectorAll("[data-complexity]")
+              .forEach((b) => b.classList.remove("active"));
+            e.target.classList.add("active");
+            state.complexityFilter = e.target.dataset.complexity;
+            render();
+          });
+        });
+
+        // Set default active filter
+        document
+          .querySelector('[data-complexity="all"]')
+          .classList.add("active");
+
+        // JSON Modal event listeners
+        DOM.closeJsonModalBtn.addEventListener("click", closeJsonPreview);
+        DOM.copyJsonBtn.addEventListener("click", copyJsonToClipboard);
+        DOM.downloadJsonBtn.addEventListener("click", () => {
+          if (state.currentJsonFile) {
+            downloadFile(state.currentJsonFile);
+          }
+        });
+
+        DOM.jsonModal.addEventListener("click", (e) => {
+          if (e.target === DOM.jsonModal) {
+            closeJsonPreview();
+          }
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (
+            e.key === "Escape" &&
+            !DOM.jsonModal.classList.contains("hidden")
+          ) {
+            closeJsonPreview();
+          }
+        });
+      }
+
+      function showMessage(message, type = "info") {
+        const msgEl = document.createElement("div");
+        msgEl.className = `message ${type}`;
+        msgEl.textContent = message;
+        DOM.messageContainer.appendChild(msgEl);
+
+        setTimeout(() => msgEl.remove(), 4000);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Make functions globally accessible for onclick handlers
+      window.openJsonPreview = openJsonPreview;
+      window.downloadFile = downloadFile;
+
+      init();
+    </script>
+  </body>
+</html>
