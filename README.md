@@ -76,7 +76,7 @@ To use the browser interface, download the complete bundle from the repository.
   * Flow of execution (high-level representation)
 
  
- ![filters](./assets/visualization.png)
+ ![workflow visuals](./assets/visualization.jpeg)
 
 
 ---
