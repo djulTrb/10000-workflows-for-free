@@ -37,6 +37,8 @@ To use the browser interface, download the complete bundle from the repository.
 
 ### Smart Filtering & Search
 
+![filters](./assets/filters.jpeg)
+
 * **Complexity-based filtering**:
 
   * Low (0–15 nodes)
@@ -57,6 +59,8 @@ To use the browser interface, download the complete bundle from the repository.
 
 ### Workflow Intelligence
 
+
+
 * **Complexity scoring** – Each workflow is automatically analyzed and scored
 * **Node analysis** – View node count, connections, triggers, and node types before opening
 * **Category & subcategory classification** – See exactly what problem the workflow solves
@@ -70,6 +74,10 @@ To use the browser interface, download the complete bundle from the repository.
   * Nodes
   * Connections between nodes
   * Flow of execution (high-level representation)
+
+ 
+ ![filters](./assets/visualization.png)
+
 
 ---
 
